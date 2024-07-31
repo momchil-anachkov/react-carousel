@@ -1,8 +1,24 @@
 .Carousel {
-    width: 100%;
-    height: 100%;
+}
+
+.image-track {
+    overflow-x: scroll;
+    overflow-y: hidden;
+    display: flex;
+    flex-flow: row nowrap;
+    scroll-snap-type: x mandatory;
+
+    scrollbar-width: none;  /* Hide scrollbar on all but safari */
+}
+
+.image-track::-webkit-scrollbar {
+    display: none;  /* Hide on safari too */
 }
 
 img {
-    display: inline;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    flex: none;
+    /*TODO: Maybe the object-fit should be part of the image set config and then we just have a default value of contain or cover*/
+    object-fit: contain;
 }
