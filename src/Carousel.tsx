@@ -50,25 +50,41 @@ function Carousel(props: {
 
         const currentPosition = target.scrollLeft / width.current;
 
-        const movedPastTheShiftAheadPoint = imageStart.current + currentPosition > shiftAheadPoint.current;
-        const stillHaveNewImagesAhead = imageStart.current + props.virtualScroll.domImageCount < props.virtualScroll.totalImageCount;
-        if (movedPastTheShiftAheadPoint && stillHaveNewImagesAhead) {
+        const movedPastTheShiftAheadPoint = currentPosition > shiftAheadPoint.current;
+        if (movedPastTheShiftAheadPoint) {
             imageStart.current += props.virtualScroll.shiftBy;
-            setImagesToRender(props.images.slice(imageStart.current, imageStart.current + props.virtualScroll.domImageCount));
 
-            shiftAheadPoint.current += props.virtualScroll.shiftBy;
-            shiftBehindPoint.current += props.virtualScroll.shiftBy;
+            if (imageStart.current > props.virtualScroll.totalImageCount) {
+                imageStart.current -= props.images.length;
+            }
+
+            if (imageStart.current + props.virtualScroll.domImageCount > props.virtualScroll.totalImageCount) {
+                const imagesFromTheEnd = props.images.slice(imageStart.current, props.images.length);
+                const imagesFromTheStart = props.images.slice(0, props.virtualScroll.domImageCount - imagesFromTheEnd.length);
+                setImagesToRender(imagesFromTheEnd.concat(imagesFromTheStart));
+            } else {
+                setImagesToRender(props.images.slice(imageStart.current, imageStart.current + props.virtualScroll.domImageCount));
+            }
+
             target.scrollLeft -= props.virtualScroll.shiftBy * width.current;
         }
 
-        const movedPastTheShiftBehindPoint = imageStart.current + currentPosition < shiftBehindPoint.current;
-        const stillHaveNewImagesBehind = imageStart.current > 0;
-        if (movedPastTheShiftBehindPoint && stillHaveNewImagesBehind) {
+        const movedPastTheShiftBehindPoint = currentPosition < shiftBehindPoint.current;
+        if (movedPastTheShiftBehindPoint) {
             imageStart.current -= props.virtualScroll.shiftBy;
-            setImagesToRender(props.images.slice(imageStart.current, imageStart.current + props.virtualScroll.domImageCount));
 
-            shiftAheadPoint.current -= props.virtualScroll.shiftBy;
-            shiftBehindPoint.current -= props.virtualScroll.shiftBy;
+            if (imageStart.current < 0) {
+                imageStart.current += props.images.length;
+            }
+
+            if (imageStart.current + props.virtualScroll.domImageCount > props.virtualScroll.totalImageCount) {
+                const imagesFromTheEnd = props.images.slice(imageStart.current, props.images.length);
+                const imagesFromTheStart = props.images.slice(0, props.virtualScroll.domImageCount - imagesFromTheEnd.length);
+                setImagesToRender(imagesFromTheEnd.concat(imagesFromTheStart));
+            } else {
+                setImagesToRender(props.images.slice(imageStart.current, imageStart.current + props.virtualScroll.domImageCount));
+            }
+
             target.scrollLeft += props.virtualScroll.shiftBy * width.current;
         }
     }
