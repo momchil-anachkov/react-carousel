@@ -12,11 +12,13 @@ function Carousel(props: {
     const imageStart = useRef(0);
     const shiftAheadPoint = useRef(props.virtualScroll.shiftAheadPoint);
     const shiftBehindPoint = useRef(props.virtualScroll.shiftBehindPoint);
+    const scrollAdjustment = useRef(0);
 
     const imageTrackRef = useRef<HTMLDivElement | null>(null);
 
     const [imagesToRender, setImagesToRender] = useState(props.images.slice(imageStart.current, props.virtualScroll.domImageCount));
 
+    /* Keep track of the carousel size */
     useEffect(() => {
         const updateSize = () => {
             console.assert(imageTrackRef.current != null, 'trackRef was null');
@@ -30,7 +32,6 @@ function Carousel(props: {
         updateSize();
         window.addEventListener('resize', updateSize);
         return () => {
-            console.log('removing resize')
             window.removeEventListener('resize', updateSize);
         }
     }, []);
@@ -38,7 +39,6 @@ function Carousel(props: {
     const images = imagesToRender.map((image, index) => {
         return <img width="100%" key={index} src={image.src} alt="A random image"/>
     });
-
 
     const imageTrackStyle = {
         width: props.width,
@@ -66,7 +66,8 @@ function Carousel(props: {
                 setImagesToRender(props.images.slice(imageStart.current, imageStart.current + props.virtualScroll.domImageCount));
             }
 
-            target.scrollLeft -= props.virtualScroll.shiftBy * width.current;
+            /* Schedule a scroll adjustment on the next render */
+            scrollAdjustment.current = -(props.virtualScroll.shiftBy * width.current);
         }
 
         const movedPastTheShiftBehindPoint = currentPosition < shiftBehindPoint.current;
@@ -85,9 +86,18 @@ function Carousel(props: {
                 setImagesToRender(props.images.slice(imageStart.current, imageStart.current + props.virtualScroll.domImageCount));
             }
 
-            target.scrollLeft += props.virtualScroll.shiftBy * width.current;
+            /* Schedule a scroll adjustment on the next render */
+            scrollAdjustment.current = +(props.virtualScroll.shiftBy * width.current);
         }
     }
+
+    /* Check and see if we need to adjust the scroll on the current render */
+    useEffect(() => {
+        if (scrollAdjustment.current !== 0) {
+            imageTrackRef.current!.scrollLeft += scrollAdjustment.current;
+            scrollAdjustment.current = 0;
+        }
+    });
 
     return (
         <div className="Carousel">
