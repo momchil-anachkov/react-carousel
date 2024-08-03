@@ -15,10 +15,19 @@
     display: none;  /* Hide on safari too */
 }
 
-img {
+.image-track img {
     scroll-snap-align: center;
     scroll-snap-stop: always;
     flex: none;
-    /*TODO: Maybe the object-fit should be part of the image set config and then we just have a default value of contain or cover*/
-    object-fit: contain;
+    object-fit: cover;
+
+    border: 1px solid gray;
 }
+
+/*.image-track img:first-child {*/
+/*    margin-left: 50%;*/
+/*}*/
+
+/*.image-track img:last-child {*/
+/*    margin-right: 50%;*/
+/*}*/

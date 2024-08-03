@@ -30,8 +30,8 @@ function Showcase() {
     const virtualScrollConfig: VirtualScrollConfig = {
         totalImageCount: 20,
         domImageCount: 10,
-        shiftAheadPoint: 6,
-        shiftBehindPoint: 4,
+        shiftAheadWhenImagesLeft: 4,
+        shiftBehindWhenImagesLeft: 4,
         shiftBy: 2,
     }
 
