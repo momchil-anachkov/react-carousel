@@ -1,11 +1,11 @@
 import React from 'react';
 import './Showcase.css';
-import Carousel from './Carousel';
+import Carousel, {CarouselImage} from './Carousel';
 
 function Showcase() {
-    const images = [
+    const images: CarouselImage[] = [
         { src:`https://picsum.photos/${600}/${300}?random=${1}` },
-        { src:`https://picsum.photos/${200}/${300}?random=${2}` },
+        { src:`https://picsum.photos/${200}/${300}?random=${2}`, style: { objectFit: 'contain' } },
         { src:`https://picsum.photos/${1000}/${200}?random=${3}` },
         { src:`https://picsum.photos/${300}/${800}?random=${4}` },
         { src:`https://picsum.photos/${300}/${300}?random=${5}` },

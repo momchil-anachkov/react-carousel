@@ -1,14 +1,19 @@
-import React, {UIEvent, UIEventHandler, useEffect, useLayoutEffect, useRef, useState} from 'react';
+import React, {CSSProperties, UIEventHandler, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import './Carousel.css';
 
-interface CarouselProps {
-    images: { src: string }[],
+export interface CarouselProps {
+    images: CarouselImage[],
     virtualScroll: {
         windowSize: number;
         shiftAheadWhenImagesLeft: number;
         shiftBehindWhenImagesLeft: number;
         shiftBy: number;
     },
+}
+
+export interface CarouselImage {
+    src: string,
+    style?: CSSProperties,
 }
 
 function Carousel({
@@ -47,6 +52,8 @@ function Carousel({
 
             /* Re-snap to image after carousel size update */
             snapToImage();
+            const currentPosition = Math.round(imageTrackRef.current!.scrollLeft / currentWidth.current);
+            imageTrackRef.current!.scrollTo({left: currentPosition * currentWidth.current, behavior: 'smooth'});
         }
 
         updateSize();
@@ -114,13 +121,13 @@ function Carousel({
         checkAndShiftVirtualWindow();
     }, []);
 
-    const onScroll: UIEventHandler<HTMLDivElement> = (event: UIEvent<HTMLDivElement>) => {
+    const onScroll: UIEventHandler<HTMLDivElement> = () => {
         snapToImageAfterMs(50);
         checkAndShiftVirtualWindow();
     }
 
     const domImages = imagesToRender.map((image, index) => {
-        return <img width="100%" key={index} src={image.src} alt="A random image"/>
+        return <img key={index} src={image.src} style={image.style} alt="A random image"/>
     });
 
     return (
