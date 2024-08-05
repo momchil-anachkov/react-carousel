@@ -49,7 +49,7 @@ function Carousel({
         const target = imageTrackRef.current as HTMLDivElement;
 
         /* See if we need to load images ahead */
-        const imagesLeftAhead = (target.scrollWidth - target.scrollLeft) / currentWidth.current;
+        const imagesLeftAhead = ((target.scrollWidth - target.scrollLeft) / currentWidth.current) - 1; // +1 because the scrollLeft is always one image "behind"
         const shouldLoadAhead = imagesLeftAhead < virtualScroll.shiftAheadWhenImagesLeft;
         if (shouldLoadAhead) {
             imageStart.current += virtualScroll.shiftBy;
@@ -115,7 +115,8 @@ function Carousel({
     }
 
     const onScroll: UIEventHandler<HTMLDivElement> = () => {
-        checkAndShiftVirtualWindowDebounceMs(50);
+        console.log(imageTrackRef.current!.scrollLeft);
+        // checkAndShiftVirtualWindowDebounceMs(50);
     }
 
     const domImages = imagesToRender.map((image, index) => {
