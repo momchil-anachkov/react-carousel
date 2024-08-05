@@ -18,5 +18,8 @@ A react-based carousel.
 
 ## Running the project
 
-### `npm start`
-
+###
+```shell
+npm install
+npm start
+```
