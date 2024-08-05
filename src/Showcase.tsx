@@ -1,6 +1,6 @@
 import React from 'react';
 import './Showcase.css';
-import Carousel, {VirtualScrollConfig} from './Carousel';
+import Carousel from './Carousel';
 
 function Showcase() {
     const images = [
@@ -46,9 +46,8 @@ function Showcase() {
         { src:`https://picsum.photos/${300}/${600}?random=${40}` },
     ];
 
-    const virtualScrollConfig: VirtualScrollConfig = {
-        totalImageCount: 40,
-        domImageCount: 20,
+    const virtualScrollConfig = {
+        windowSize: 20,
         shiftAheadWhenImagesLeft: 5,
         shiftBehindWhenImagesLeft: 5,
         shiftBy: 7,
@@ -57,7 +56,7 @@ function Showcase() {
     return (
         <div className="Showcase">
             <div className="section">
-                <Carousel width="100%" height="300px" images={images} virtualScroll={virtualScrollConfig}/>
+                <Carousel images={images} virtualScroll={virtualScrollConfig}/>
             </div>
         </div>
     );

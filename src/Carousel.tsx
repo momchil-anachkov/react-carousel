@@ -1,18 +1,25 @@
-import React, {UIEventHandler, UIEvent, useEffect, useState, useRef, useLayoutEffect} from 'react';
+import React, {UIEvent, UIEventHandler, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import './Carousel.css';
 
-function Carousel(props: {
-    width: string,
-    height: string,
-    images: { src: string }[]
-    virtualScroll: VirtualScrollConfig,
-}) {
-    const width = useRef(0);
-    const height = useRef(0);
-    // TODO: Preload images behind on startup
+interface CarouselProps {
+    images: { src: string }[],
+    virtualScroll: {
+        windowSize: number;
+        shiftAheadWhenImagesLeft: number;
+        shiftBehindWhenImagesLeft: number;
+        shiftBy: number;
+    },
+}
+
+function Carousel({
+    images,
+    virtualScroll,
+}: CarouselProps) {
+    const currentWidth = useRef(0);
+    const currentHeight = useRef(0);
     const imageStart = useRef(0);
     const imageTrackRef = useRef<HTMLDivElement | null>(null);
-    const [imagesToRender, setImagesToRender] = useState(props.images.slice(imageStart.current, props.virtualScroll.domImageCount));
+    const [imagesToRender, setImagesToRender] = useState(images.slice(imageStart.current, virtualScroll.windowSize));
     const scrollAdjustment = useRef(0);
     const scrollEndTimeout = useRef(0);
 
@@ -23,8 +30,8 @@ function Carousel(props: {
             const newWidth = imageTrackRef.current!.offsetWidth;
             const newHeight = imageTrackRef.current!.offsetHeight;
 
-            width.current = newWidth;
-            height.current = newHeight;
+            currentWidth.current = newWidth;
+            currentHeight.current = newHeight;
         }
 
         updateSize();
@@ -34,65 +41,60 @@ function Carousel(props: {
         }
     }, []);
 
-    const images = imagesToRender.map((image, index) => {
-        return <img width="100%" key={index} src={image.src} alt="A random image"/>
-    });
-
     const realignOnScrollEnd = () => {
         if (scrollEndTimeout.current !== 0) {
             clearTimeout(scrollEndTimeout.current);
         }
 
         scrollEndTimeout.current = setTimeout(() => {
-            const currentPosition = Math.round(imageTrackRef.current!.scrollLeft / width.current);
-            imageTrackRef.current!.scrollTo({ left: currentPosition * width.current, behavior: 'smooth' });
+            const currentPosition = Math.round(imageTrackRef.current!.scrollLeft / currentWidth.current);
+            imageTrackRef.current!.scrollTo({left: currentPosition * currentWidth.current, behavior: 'smooth'});
         }, 50) as any;
     }
 
-    const checkAndShiftVirtualWindow: UIEventHandler<HTMLDivElement> = (event: UIEvent<HTMLDivElement>) => {
-        const target = event.target as HTMLDivElement;
-        let shiftBy = props.virtualScroll.shiftBy;
+    const checkAndShiftVirtualWindow = () => {
+        const target = imageTrackRef.current as HTMLDivElement;
 
         /* See if we need to load images ahead */
-        const imagesLeft = (target.scrollWidth - target.scrollLeft) / width.current;
-        const shouldLoadAhead = imagesLeft < props.virtualScroll.shiftAheadWhenImagesLeft;
+        const imagesLeft = (target.scrollWidth - target.scrollLeft) / currentWidth.current;
+        const shouldLoadAhead = imagesLeft < virtualScroll.shiftAheadWhenImagesLeft;
         if (shouldLoadAhead) {
-            imageStart.current += shiftBy;
+            imageStart.current += virtualScroll.shiftBy;
 
-            if (imageStart.current > props.virtualScroll.totalImageCount) {
-                imageStart.current -= props.images.length;
+            if (imageStart.current > images.length) {
+                imageStart.current -= images.length;
             }
 
-            if (imageStart.current + props.virtualScroll.domImageCount > props.virtualScroll.totalImageCount) {
-                const imagesFromTheEnd = props.images.slice(imageStart.current, props.images.length);
-                const imagesFromTheStart = props.images.slice(0, props.virtualScroll.domImageCount - imagesFromTheEnd.length);
+            if (imageStart.current + virtualScroll.windowSize > images.length) {
+                const imagesFromTheEnd = images.slice(imageStart.current, images.length);
+                const imagesFromTheStart = images.slice(0, virtualScroll.windowSize - imagesFromTheEnd.length);
                 setImagesToRender(imagesFromTheEnd.concat(imagesFromTheStart));
             } else {
-                setImagesToRender(props.images.slice(imageStart.current, imageStart.current + props.virtualScroll.domImageCount));
+                setImagesToRender(images.slice(imageStart.current, imageStart.current + virtualScroll.windowSize));
             }
 
-            scrollAdjustment.current -= (shiftBy * width.current);
+            scrollAdjustment.current -= (virtualScroll.shiftBy * currentWidth.current);
         }
 
         /* See if we need to load images behind */
-        const currentPosition = target.scrollLeft / width.current;
-        const shouldLoadBehind = currentPosition < props.virtualScroll.shiftBehindWhenImagesLeft
+        const currentPosition = target.scrollLeft / currentWidth.current;
+        const shouldLoadBehind = currentPosition < virtualScroll.shiftBehindWhenImagesLeft
         if (shouldLoadBehind) {
-            imageStart.current -= shiftBy;
+            imageStart.current -= virtualScroll.shiftBy;
 
             if (imageStart.current < 0) {
-                imageStart.current += props.images.length;
+                imageStart.current += images.length;
             }
 
-            if (imageStart.current + props.virtualScroll.domImageCount > props.virtualScroll.totalImageCount) {
-                const imagesFromTheEnd = props.images.slice(imageStart.current, props.images.length);
-                const imagesFromTheStart = props.images.slice(0, props.virtualScroll.domImageCount - imagesFromTheEnd.length);
+            if (imageStart.current + virtualScroll.windowSize > images.length) {
+                const imagesFromTheEnd = images.slice(imageStart.current, images.length);
+                const imagesFromTheStart = images.slice(0, virtualScroll.windowSize - imagesFromTheEnd.length);
                 setImagesToRender(imagesFromTheEnd.concat(imagesFromTheStart));
             } else {
-                setImagesToRender(props.images.slice(imageStart.current, imageStart.current + props.virtualScroll.domImageCount));
+                setImagesToRender(images.slice(imageStart.current, imageStart.current + virtualScroll.windowSize));
             }
 
-            scrollAdjustment.current += (shiftBy * width.current);
+            scrollAdjustment.current += (virtualScroll.shiftBy * currentWidth.current);
         }
     }
 
@@ -103,28 +105,28 @@ function Carousel(props: {
         }
     });
 
+    /* Adjust the virtual scroll window after the initial render, so we have images behind as well */
+    useEffect(() => {
+        checkAndShiftVirtualWindow();
+    }, []);
+
     const onScroll: UIEventHandler<HTMLDivElement> = (event: UIEvent<HTMLDivElement>) => {
         realignOnScrollEnd();
-        checkAndShiftVirtualWindow(event);
+        checkAndShiftVirtualWindow();
     }
+
+    const domImages = imagesToRender.map((image, index) => {
+        return <img width="100%" key={index} src={image.src} alt="A random image"/>
+    });
 
     return (
         <div className="Carousel">
             <div onScroll={onScroll} className="image-track" ref={imageTrackRef}>
-                {images}
+                {domImages}
             </div>
         </div>
     );
 }
 
-export interface VirtualScrollConfig {
-    totalImageCount: number;
-    domImageCount: number;
-
-    shiftAheadWhenImagesLeft: number;
-    shiftBehindWhenImagesLeft: number;
-
-    shiftBy: number;
-}
 
 export default Carousel;
