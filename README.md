@@ -10,7 +10,7 @@ A react-based carousel.
 - ✅ Intentionally global-scoped styling so that you can tweak the component styles from the outside (to help with integration)
 - ✅ Snap scroll to image
 
-## Future Improvements
+## Possible Future Improvements
 
 - 🟨 Make infinite scrolling optional
 - 🟨 Make virtual scrolling optional
