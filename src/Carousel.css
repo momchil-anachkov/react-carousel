@@ -6,10 +6,9 @@
     overflow-y: hidden;
     display: flex;
     flex-flow: row nowrap;
+    scroll-snap-type: x mandatory;
 
     scrollbar-width: none;  /* Hide scrollbar on all but safari */
-
-    /*scroll-snap-type: x mandatory;*/
 }
 
 .image-track::-webkit-scrollbar {
@@ -21,6 +20,6 @@
     flex: none;
     object-fit: cover;
 
-    /*scroll-snap-align: start;*/
-    /*scroll-snap-stop: normal;*/
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
 }

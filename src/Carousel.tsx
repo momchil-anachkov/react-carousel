@@ -28,19 +28,6 @@ function Carousel({
     const scrollAdjustment = useRef(0);
     const scrollEndTimeout = useRef(0);
 
-    const snapToImage = () => {
-        const currentPosition = Math.round(imageTrackRef.current!.scrollLeft / currentWidth.current);
-        imageTrackRef.current!.scrollTo({left: currentPosition * currentWidth.current, behavior: 'smooth'});
-    }
-
-    const snapToImageAfterMs = (time: number) => {
-        if (scrollEndTimeout.current !== 0) {
-            clearTimeout(scrollEndTimeout.current);
-        }
-
-        scrollEndTimeout.current = setTimeout(snapToImage, time) as any;
-    }
-
     /* Keep track of the carousel size */
     useEffect(() => {
         const updateSize = () => {
@@ -49,11 +36,6 @@ function Carousel({
 
             currentWidth.current = newWidth;
             currentHeight.current = newHeight;
-
-            /* Re-snap to image after carousel size update */
-            snapToImage();
-            const currentPosition = Math.round(imageTrackRef.current!.scrollLeft / currentWidth.current);
-            imageTrackRef.current!.scrollTo({left: currentPosition * currentWidth.current, behavior: 'smooth'});
         }
 
         updateSize();
@@ -116,14 +98,24 @@ function Carousel({
         }
     });
 
-    /* Adjust the virtual scroll window after the initial render, so we have images behind as well */
+    /*
+    * Recalculate the virtual scroll window after the initial render, so we have images behind as well
+    * in case the user decides to scroll directly backwards
+    */
     useEffect(() => {
         checkAndShiftVirtualWindow();
     }, []);
 
+    const snapToImageAfterScrollEndMs = (time: number) => {
+        if (scrollEndTimeout.current !== 0) {
+            clearTimeout(scrollEndTimeout.current);
+        }
+
+        scrollEndTimeout.current = setTimeout(checkAndShiftVirtualWindow, time) as any;
+    }
+
     const onScroll: UIEventHandler<HTMLDivElement> = () => {
-        snapToImageAfterMs(50);
-        checkAndShiftVirtualWindow();
+        snapToImageAfterScrollEndMs(50);
     }
 
     const domImages = imagesToRender.map((image, index) => {
