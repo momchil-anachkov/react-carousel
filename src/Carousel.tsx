@@ -23,15 +23,30 @@ function Carousel({
     const scrollAdjustment = useRef(0);
     const scrollEndTimeout = useRef(0);
 
+    const snapToImage = () => {
+        const currentPosition = Math.round(imageTrackRef.current!.scrollLeft / currentWidth.current);
+        imageTrackRef.current!.scrollTo({left: currentPosition * currentWidth.current, behavior: 'smooth'});
+    }
+
+    const snapToImageAfterMs = (time: number) => {
+        if (scrollEndTimeout.current !== 0) {
+            clearTimeout(scrollEndTimeout.current);
+        }
+
+        scrollEndTimeout.current = setTimeout(snapToImage, time) as any;
+    }
+
     /* Keep track of the carousel size */
     useEffect(() => {
         const updateSize = () => {
-            console.assert(imageTrackRef.current != null, 'trackRef was null');
             const newWidth = imageTrackRef.current!.offsetWidth;
             const newHeight = imageTrackRef.current!.offsetHeight;
 
             currentWidth.current = newWidth;
             currentHeight.current = newHeight;
+
+            /* Re-snap to image after carousel size update */
+            snapToImage();
         }
 
         updateSize();
@@ -41,23 +56,12 @@ function Carousel({
         }
     }, []);
 
-    const realignOnScrollEnd = () => {
-        if (scrollEndTimeout.current !== 0) {
-            clearTimeout(scrollEndTimeout.current);
-        }
-
-        scrollEndTimeout.current = setTimeout(() => {
-            const currentPosition = Math.round(imageTrackRef.current!.scrollLeft / currentWidth.current);
-            imageTrackRef.current!.scrollTo({left: currentPosition * currentWidth.current, behavior: 'smooth'});
-        }, 50) as any;
-    }
-
     const checkAndShiftVirtualWindow = () => {
         const target = imageTrackRef.current as HTMLDivElement;
 
         /* See if we need to load images ahead */
-        const imagesLeft = (target.scrollWidth - target.scrollLeft) / currentWidth.current;
-        const shouldLoadAhead = imagesLeft < virtualScroll.shiftAheadWhenImagesLeft;
+        const imagesLeftAhead = (target.scrollWidth - target.scrollLeft) / currentWidth.current;
+        const shouldLoadAhead = imagesLeftAhead < virtualScroll.shiftAheadWhenImagesLeft;
         if (shouldLoadAhead) {
             imageStart.current += virtualScroll.shiftBy;
 
@@ -111,7 +115,7 @@ function Carousel({
     }, []);
 
     const onScroll: UIEventHandler<HTMLDivElement> = (event: UIEvent<HTMLDivElement>) => {
-        realignOnScrollEnd();
+        snapToImageAfterMs(50);
         checkAndShiftVirtualWindow();
     }
 
