@@ -12,8 +12,8 @@ A react-based carousel.
 
 ## Future Improvements
 
-- 🟨 Make infinite scrolling configurable
-- 🟨 Make virtual scrolling configurable
+- 🟨 Make infinite scrolling optional
+- 🟨 Make virtual scrolling optional
 - 🟨 Make the scroll axis configurable
 
 ## Running the project

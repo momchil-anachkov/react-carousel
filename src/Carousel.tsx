@@ -106,7 +106,7 @@ function Carousel({
         checkAndShiftVirtualWindow();
     }, []);
 
-    const snapToImageAfterScrollEndMs = (time: number) => {
+    const checkAndShiftVirtualWindowDebounceMs = (time: number) => {
         if (scrollEndTimeout.current !== 0) {
             clearTimeout(scrollEndTimeout.current);
         }
@@ -115,7 +115,7 @@ function Carousel({
     }
 
     const onScroll: UIEventHandler<HTMLDivElement> = () => {
-        snapToImageAfterScrollEndMs(50);
+        checkAndShiftVirtualWindowDebounceMs(50);
     }
 
     const domImages = imagesToRender.map((image, index) => {
