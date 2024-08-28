@@ -1,4 +1,4 @@
-# Getting Started with Create React App
+# Just a Carousel
 
 A react-based carousel.
 
